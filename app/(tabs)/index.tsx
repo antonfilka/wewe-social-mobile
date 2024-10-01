@@ -1,10 +1,30 @@
 import { ExternalLink } from '@tamagui/lucide-icons';
 import { Anchor, H2, Paragraph, XStack, YStack } from 'tamagui';
 import { ToastControl } from 'app/toasts/CurrentToast';
+import { useCallback } from 'react';
+import { store$ } from 'store/app';
+import { observer } from '@legendapp/state/react';
+import * as SplashScreen from 'expo-splash-screen';
 
-export default function TabOneScreen() {
+const TabOneScreen = observer(() => {
+  const appIsReady = store$.isAppReady.get();
+
+  const onLayoutRootView = useCallback(async () => {
+    if (appIsReady) {
+      await SplashScreen.hideAsync();
+    }
+  }, [appIsReady]);
+
   return (
-    <YStack f={1} ai="center" gap="$8" px="$10" pt="$5" bg="$background">
+    <YStack
+      f={1}
+      ai="center"
+      gap="$8"
+      px="$10"
+      pt="$5"
+      bg="$background"
+      // This is the home screen and it should tell that app is ready to reveal splash screen
+      onLayout={onLayoutRootView}>
       <H2>Tamagui + Expo</H2>
 
       <ToastControl />
@@ -43,4 +63,6 @@ export default function TabOneScreen() {
       </XStack>
     </YStack>
   );
-}
+});
+
+export default TabOneScreen;

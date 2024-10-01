@@ -1,9 +1,11 @@
 import '../tamagui-web.css';
 import { useEffect } from 'react';
 import { useFonts } from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
 import { Providers } from './Providers';
 import { RootLayoutNav } from './RootLayoutNav';
+import { observer } from '@legendapp/state/react';
+import { store$ } from 'store/app';
+import * as SplashScreen from 'expo-splash-screen';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -15,23 +17,26 @@ export const unstable_settings = {
   initialRouteName: '(tabs)',
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+const RootLayout = observer(() => {
+  const isAppReady = store$.isAppReady.get();
+
   const [interLoaded, interError] = useFonts({
     Inter: require('@tamagui/font-inter/otf/Inter-Medium.otf'),
     InterBold: require('@tamagui/font-inter/otf/Inter-Bold.otf'),
   });
 
   useEffect(() => {
-    if (interLoaded || interError) {
-      // Hide the splash screen after the fonts have loaded (or an error was returned) and the UI is ready.
-      SplashScreen.hideAsync();
+    async function prepare() {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      if (interLoaded || interError) store$.setAppIsReady(true);
     }
-  }, [interLoaded, interError]);
 
-  if (!interLoaded && !interError) {
+    prepare();
+  }, [interError, interLoaded]);
+
+  if (!isAppReady) {
     return null;
   }
 
@@ -40,4 +45,6 @@ export default function RootLayout() {
       <RootLayoutNav />
     </Providers>
   );
-}
+});
+
+export default RootLayout;
